@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Walkthrough: Nachweis des Ohmschen Gesetzes</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #596273;
+      --line: #d9deea;
+      --accent: #6d28d9;
+      --accent-light: #f2ecff;
+      --warn: #fff7dc;
+      --warn-line: #e5c95c;
+      --ok: #eaf8ef;
+      --ok-line: #97d3aa;
+      --danger: #fff0f0;
+      --danger-line: #ef9a9a;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    header {
+      background: linear-gradient(135deg, #111827, #6d28d9);
+      color: white;
+      padding: 3rem 1.25rem;
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.05;
+    }
+
+    header p {
+      max-width: 860px;
+      margin: 0.75rem 0 0;
+      color: #efe8ff;
+      font-size: 1.1rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.95rem;
+    }
+
+    main { padding: 1.25rem; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    nav {
+      position: sticky;
+      top: 1rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    nav h2 {
+      font-size: 1rem;
+      margin: 0 0 0.75rem;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e8ecf5;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0.25rem 0 0.85rem;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 0.35rem;
+      max-height: 68vh;
+      overflow: auto;
+      padding-right: 0.25rem;
+    }
+
+    .step-link {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 12px;
+      padding: 0.55rem 0.65rem;
+      cursor: pointer;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .step-link:hover { background: var(--accent-light); }
+
+    .step-link.active {
+      background: var(--accent-light);
+      border-color: #cbb6ff;
+      color: #4c1d95;
+      font-weight: 700;
+    }
+
+    .step {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(1rem, 3vw, 2rem);
+      margin-bottom: 1rem;
+    }
+
+    .step.active { display: block; }
+
+    .step h2 {
+      margin-top: 0;
+      line-height: 1.2;
+      font-size: clamp(1.45rem, 3vw, 2.05rem);
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .box {
+      border-radius: 14px;
+      padding: 1rem;
+      margin: 1rem 0;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+    }
+
+    .task { background: var(--warn); border-color: var(--warn-line); }
+    .check { background: var(--ok); border-color: var(--ok-line); }
+    .physics { background: var(--accent-light); border-color: #cbb6ff; }
+    .danger { background: var(--danger); border-color: var(--danger-line); }
+    .teacher { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .box h3 { margin-top: 0; }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: #edf0f7;
+      padding: 0.1rem 0.25rem;
+      border-radius: 5px;
+    }
+
+    pre {
+      position: relative;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem;
+      border-radius: 14px;
+      overflow-x: auto;
+      border: 1px solid #0f172a;
+      line-height: 1.45;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border-radius: 0;
+      white-space: pre;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.55rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border-radius: 10px;
+      padding: 0.35rem 0.55rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .hint-button, .solution-button, .nav-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 0.7rem 0.9rem;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      margin: 0.15rem 0.25rem 0.15rem 0;
+    }
+
+    .hint-button { background: var(--accent-light); color: #4c1d95; }
+    .solution-button { background: #fff3c4; color: #654400; }
+    .nav-btn { background: var(--accent); color: white; }
+    .nav-btn.secondary { background: #e5e7eb; color: #111827; }
+    .nav-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .hint, .solution {
+      display: none;
+      margin-top: 0.8rem;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+    }
+
+    .hint {
+      background: var(--accent-light);
+      border: 1px solid #cbb6ff;
+    }
+
+    .solution {
+      background: #fff9df;
+      border: 1px solid #efd36e;
+    }
+
+    .hint.visible, .solution.visible { display: block; }
+
+    .step-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 1rem 0 0;
+    }
+
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(1.15rem, 2vw, 1.45rem);
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.7rem;
+      vertical-align: top;
+    }
+
+    th { background: #f1f5f9; text-align: left; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .diagram-box {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      margin: 1rem 0;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    .diagram-box svg {
+      width: 100%;
+      min-width: 520px;
+      height: auto;
+      display: block;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 2rem 1.25rem 3rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      header, nav, .step-controls, .hint-button, .solution-button, .copy-btn { display: none !important; }
+      body { background: white; }
+      main { padding: 0; }
+      .layout { display: block; }
+      .step { display: block !important; box-shadow: none; border: 0; page-break-inside: avoid; }
+      .hint, .solution { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Nachweis des Ohmschen Gesetzes</h1>
+      <p>Walkthrough für die Jahrgangsstufe 11: Experiment planen, an einem ohmschen Widerstand messen, U-I-Diagramm erstellen, Proportionalität nachweisen und den Widerstand aus der Steigung bestimmen.</p>
+      <div class="meta">
+        <span class="pill">Physik Jg. 11</span>
+        <span class="pill">Experimentelles Arbeiten</span>
+        <span class="pill">U-I-Kennlinie</span>
+        <span class="pill">Hilfen per Klick</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="layout">
+      <nav aria-label="Schritte">
+        <h2>Fortschritt</h2>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div id="progressText">Schritt 1 von 18</div>
+        <hr>
+        <div class="step-list" id="stepList"></div>
+      </nav>
+
+      <div class="content">
+
+        <section class="step active" data-title="Überblick">
+          <h2>1. Überblick: Ziel des Experiments</h2>
+          <p class="lead">Ihr untersucht, ob die Spannung <strong>U</strong> und die Stromstärke <strong>I</strong> an einem ohmschen Widerstand proportional zueinander sind.</p>
+          <div class="box check">
+            <h3>Am Ende könnt ihr nachweisen:</h3>
+            <ul>
+              <li>Bei einem ohmschen Widerstand gilt näherungsweise <code>U ~ I</code>.</li>
+              <li>Im Diagramm <code>U</code> gegen <code>I</code> liegen die Messpunkte ungefähr auf einer Geraden durch den Ursprung.</li>
+              <li>Der Quotient <code>U/I</code> ist ungefähr konstant.</li>
+              <li>Die Steigung der Geraden entspricht dem Widerstand <code>R</code>.</li>
+            </ul>
+          </div>
+          <div class="formula">U = R · I</div>
+          <div class="box teacher">
+            <h3>Arbeitsregel</h3>
+            <p>Bearbeitet jeden Schritt zunächst selbst. Öffnet Hilfen erst danach. Lösungen sind als Kontrolle gedacht, nicht als Ersatz für die eigene Planung.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Fragestellung">
+          <h2>2. Fragestellung formulieren</h2>
+          <p>Ein Experiment beginnt mit einer präzisen Frage.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Formuliert eine Fragestellung, in der die Größen <code>U</code> und <code>I</code> vorkommen.</p>
+          </div>
+          <button class="hint-button" data-target="hint-question">Hilfe anzeigen</button>
+          <div class="hint" id="hint-question">
+            <p>Eine geeignete Frage beginnt zum Beispiel mit: „Ist ... proportional zu ...?“ oder „Wie hängt ... von ... ab?“</p>
+          </div>
+          <button class="solution-button" data-target="solution-question">Musterlösung anzeigen</button>
+          <div class="solution" id="solution-question">
+            <p><strong>Mögliche Fragestellung:</strong> Ist die Spannung <code>U</code> an einem ohmschen Widerstand proportional zur Stromstärke <code>I</code>?</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Theorie">
+          <h2>3. Theoretische Grundlage</h2>
+          <p>Für einen ohmschen Widerstand gilt bei annähernd konstanter Temperatur:</p>
+          <div class="formula">U = R · I</div>
+          <div class="two-col">
+            <div class="box physics">
+              <h3>Größen und Einheiten</h3>
+              <ul>
+                <li><code>U</code>: Spannung in Volt <code>V</code></li>
+                <li><code>I</code>: Stromstärke in Ampere <code>A</code></li>
+                <li><code>R</code>: Widerstand in Ohm <code>Ω</code></li>
+              </ul>
+            </div>
+            <div class="box physics">
+              <h3>Proportionalität</h3>
+              <p><code>U</code> ist proportional zu <code>I</code>, wenn der Quotient <code>U/I</code> ungefähr konstant bleibt.</p>
+              <div class="formula">R = U / I</div>
+            </div>
+          </div>
+          <div class="box task">
+            <h3>Kontrollfrage</h3>
+            <p>Wenn sich die Stromstärke verdoppelt, was müsste mit der Spannung passieren, falls <code>U ~ I</code> gilt?</p>
+          </div>
+          <button class="hint-button" data-target="hint-double">Hilfe anzeigen</button>
+          <div class="hint" id="hint-double">
+            <p>Bei einer Proportionalität ändern sich beide Größen im gleichen Verhältnis.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Hypothese">
+          <h2>4. Hypothese aufstellen</h2>
+          <p>Eine Hypothese ist eine begründete Erwartung, die ihr experimentell prüft.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Formuliert eine Hypothese. Sie soll vorhersagen, wie das Diagramm aussehen müsste, wenn das Ohmsche Gesetz bestätigt wird.</p>
+          </div>
+          <button class="hint-button" data-target="hint-hypothesis">Hilfe anzeigen</button>
+          <div class="hint" id="hint-hypothesis">
+            <p>Denkt an eine proportionale Funktion: Gerade, Ursprung, konstante Steigung.</p>
+          </div>
+          <button class="solution-button" data-target="solution-hypothesis">Musterhypothese anzeigen</button>
+          <div class="solution" id="solution-hypothesis">
+            <p>Für einen ohmschen Widerstand ist <code>U</code> proportional zu <code>I</code>. Das Diagramm <code>U</code> gegen <code>I</code> ergibt eine Gerade durch den Ursprung. Der Quotient <code>U/I</code> bleibt ungefähr konstant.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Material">
+          <h2>5. Material planen</h2>
+          <p>Überlegt zuerst, welche Geräte ihr für eine saubere Messung benötigt.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Erstellt eine Materialliste. Ihr müsst eine Spannung einstellen und Spannung sowie Stromstärke messen können.</p>
+          </div>
+          <button class="hint-button" data-target="hint-material">Hilfe anzeigen</button>
+          <div class="hint" id="hint-material">
+            <p>Denkt an Spannungsquelle, ohmschen Widerstand, Messgeräte und Verbindungsleitungen.</p>
+          </div>
+          <button class="solution-button" data-target="solution-material">Mögliche Liste anzeigen</button>
+          <div class="solution" id="solution-material">
+            <ul>
+              <li>regelbare Gleichspannungsquelle, zum Beispiel 0–6 V</li>
+              <li>ohmscher Widerstand, zum Beispiel 100 Ω oder 220 Ω</li>
+              <li>Amperemeter oder Multimeter im Strommessbereich</li>
+              <li>Voltmeter oder Multimeter im Spannungsmessbereich</li>
+              <li>Verbindungsleitungen</li>
+              <li>gegebenenfalls Schalter</li>
+              <li>Tabellenblatt oder Tabellenkalkulation</li>
+            </ul>
+          </div>
+          <div class="box danger">
+            <h3>Sicherheit</h3>
+            <p>Arbeitet nur mit der vorgesehenen Kleinspannung des Schulnetzgeräts. Verändert den Aufbau nur bei ausgeschalteter Spannungsquelle oder bei <code>0 V</code>. Vermeidet Kurzschlüsse.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Schaltplan">
+          <h2>6. Schaltplan zeichnen</h2>
+          <p>Das Amperemeter und das Voltmeter werden unterschiedlich angeschlossen.</p>
+          <div class="diagram-box">
+            <svg viewBox="0 0 760 300" role="img" aria-label="Vereinfachter Schaltplan mit Amperemeter in Reihe und Voltmeter parallel">
+              <rect x="20" y="20" width="720" height="260" rx="14" fill="#ffffff"></rect>
+              <line x1="90" y1="150" x2="200" y2="150" stroke="#111827" stroke-width="4"></line>
+              <circle cx="245" cy="150" r="38" fill="#f8fafc" stroke="#111827" stroke-width="4"></circle>
+              <text x="245" y="158" text-anchor="middle" font-size="28" font-family="system-ui">A</text>
+              <line x1="283" y1="150" x2="390" y2="150" stroke="#111827" stroke-width="4"></line>
+              <rect x="390" y="122" width="120" height="56" rx="6" fill="#f8fafc" stroke="#111827" stroke-width="4"></rect>
+              <text x="450" y="158" text-anchor="middle" font-size="22" font-family="system-ui">R</text>
+              <line x1="510" y1="150" x2="655" y2="150" stroke="#111827" stroke-width="4"></line>
+              <line x1="655" y1="150" x2="655" y2="85" stroke="#111827" stroke-width="4"></line>
+              <line x1="655" y1="85" x2="90" y2="85" stroke="#111827" stroke-width="4"></line>
+              <line x1="90" y1="85" x2="90" y2="150" stroke="#111827" stroke-width="4"></line>
+              <line x1="390" y1="178" x2="390" y2="230" stroke="#6d28d9" stroke-width="4"></line>
+              <line x1="510" y1="178" x2="510" y2="230" stroke="#6d28d9" stroke-width="4"></line>
+              <line x1="390" y1="230" x2="415" y2="230" stroke="#6d28d9" stroke-width="4"></line>
+              <line x1="485" y1="230" x2="510" y2="230" stroke="#6d28d9" stroke-width="4"></line>
+              <circle cx="450" cy="230" r="35" fill="#f2ecff" stroke="#6d28d9" stroke-width="4"></circle>
+              <text x="450" y="238" text-anchor="middle" font-size="28" fill="#4c1d95" font-family="system-ui">V</text>
+              <line x1="90" y1="150" x2="90" y2="210" stroke="#111827" stroke-width="4"></line>
+              <line x1="70" y1="210" x2="110" y2="210" stroke="#111827" stroke-width="4"></line>
+              <line x1="78" y1="230" x2="102" y2="230" stroke="#111827" stroke-width="4"></line>
+              <text x="90" y="260" text-anchor="middle" font-size="18" font-family="system-ui">Quelle</text>
+              <text x="245" y="205" text-anchor="middle" font-size="16" font-family="system-ui">A in Reihe</text>
+              <text x="450" y="285" text-anchor="middle" font-size="16" fill="#4c1d95" font-family="system-ui">V parallel zu R</text>
+            </svg>
+          </div>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Zeichnet den Schaltplan in euer Protokoll. Markiert: Amperemeter in Reihe, Voltmeter parallel zum Widerstand.</p>
+          </div>
+          <button class="hint-button" data-target="hint-circuit">Hilfe anzeigen</button>
+          <div class="hint" id="hint-circuit">
+            <p>Das Amperemeter misst den Strom durch den Widerstand. Deshalb muss derselbe Strom durch Amperemeter und Widerstand fließen. Das Voltmeter misst den Spannungsabfall am Widerstand und wird an beide Enden des Widerstands angeschlossen.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Variablen">
+          <h2>7. Variablen festlegen</h2>
+          <p>Sauberes Experimentieren bedeutet: Ihr legt fest, welche Größe verändert wird, welche gemessen wird und was konstant bleiben soll.</p>
+          <table>
+            <thead>
+              <tr><th>Art der Größe</th><th>In diesem Experiment</th><th>Begründung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Veränderte Größe</td><td>eingestellte Spannung <code>U</code></td><td>Sie wird schrittweise erhöht.</td></tr>
+              <tr><td>Gemessene Größe</td><td>Stromstärke <code>I</code></td><td>Sie reagiert auf die angelegte Spannung.</td></tr>
+              <tr><td>Konstant zu halten</td><td>Widerstand, Temperatur möglichst konstant</td><td>Nur dann kann <code>R</code> als konstant angesehen werden.</td></tr>
+            </tbody>
+          </table>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Erklärt, warum eine starke Erwärmung des Widerstands die Messung verfälschen kann.</p>
+          </div>
+          <button class="hint-button" data-target="hint-temperature">Hilfe anzeigen</button>
+          <div class="hint" id="hint-temperature">
+            <p>Bei vielen Materialien hängt der Widerstand von der Temperatur ab. Wenn sich <code>R</code> während der Messung ändert, ist <code>U/I</code> nicht mehr konstant.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Messbereich">
+          <h2>8. Messbereich planen</h2>
+          <p>Legt vor dem Experiment fest, welche Spannungen ihr einstellen wollt.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Plant mindestens acht Messpunkte. Beginnt nicht direkt mit der maximalen Spannung. Wählt sinnvolle Abstände.</p>
+          </div>
+          <button class="hint-button" data-target="hint-range">Hilfe anzeigen</button>
+          <div class="hint" id="hint-range">
+            <p>Bei einem 100-Ω-Widerstand sind zum Beispiel Werte zwischen 0,5 V und 5,0 V geeignet. Dann liegt die Stromstärke ungefähr zwischen 5 mA und 50 mA.</p>
+          </div>
+          <button class="solution-button" data-target="solution-range">Beispiel anzeigen</button>
+          <div class="solution" id="solution-range">
+            <p>Beispiel-Messreihe: 0,5 V; 1,0 V; 1,5 V; 2,0 V; 2,5 V; 3,0 V; 3,5 V; 4,0 V; 4,5 V; 5,0 V.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Tabelle">
+          <h2>9. Messwerttabelle vorbereiten</h2>
+          <p>Erstellt vor der Messung eine Tabelle mit Einheiten.</p>
+          <table>
+            <thead>
+              <tr><th>Nr.</th><th>U in V</th><th>I in A</th><th>U/I in Ω</th><th>Bemerkung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>6</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>7</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>8</td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Übernehmt die Tabelle in euer Heft oder in eine Tabellenkalkulation. Ergänzt weitere Zeilen, wenn ihr mehr Messpunkte aufnehmt.</p>
+          </div>
+          <button class="hint-button" data-target="hint-units">Hilfe zu Einheiten anzeigen</button>
+          <div class="hint" id="hint-units">
+            <p>Tragt Stromstärken möglichst in Ampere ein. Beispiel: <code>25 mA = 0,025 A</code>. Es gilt: <code>1 mA = 0,001 A</code>.</p>
+          </div>
+          <button class="solution-button" data-target="solution-csv">CSV-Vorlage anzeigen</button>
+          <div class="solution" id="solution-csv">
+            <pre><button class="copy-btn">Kopieren</button><code>Nr,U in V,I in A,U/I in Ohm,Bemerkung
+1,,,,
+2,,,,
+3,,,,
+4,,,,
+5,,,,
+6,,,,
+7,,,,
+8,,,,
+9,,,,
+10,,,,</code></pre>
+          </div>
+        </section>
+
+        <section class="step" data-title="Aufbau">
+          <h2>10. Experiment aufbauen</h2>
+          <ol>
+            <li>Stellt die Spannungsquelle auf <code>0 V</code>.</li>
+            <li>Baut den Stromkreis nach eurem Schaltplan auf.</li>
+            <li>Schaltet das Amperemeter in Reihe zum Widerstand.</li>
+            <li>Schaltet das Voltmeter parallel zum Widerstand.</li>
+            <li>Lasst den Aufbau kontrollieren, wenn dies im Unterricht vorgesehen ist.</li>
+            <li>Schaltet erst danach die Spannungsquelle ein.</li>
+          </ol>
+          <div class="box danger">
+            <h3>Wichtig</h3>
+            <p>Ein Amperemeter darf nicht direkt parallel zur Spannungsquelle angeschlossen werden. Das kann zu einem Kurzschluss führen.</p>
+          </div>
+          <button class="hint-button" data-target="hint-amp">Warum A in Reihe?</button>
+          <div class="hint" id="hint-amp">
+            <p>In einer Reihenschaltung ist die Stromstärke überall gleich. Deshalb misst das Amperemeter nur in Reihe den Strom, der tatsächlich durch den Widerstand fließt.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Durchführung">
+          <h2>11. Messung durchführen</h2>
+          <ol>
+            <li>Stellt den ersten Spannungswert ein.</li>
+            <li>Wartet kurz, bis die Messgeräte stabile Werte anzeigen.</li>
+            <li>Lest <code>U</code> und <code>I</code> ab.</li>
+            <li>Tragt beide Werte sofort mit Einheit in die Tabelle ein.</li>
+            <li>Erhöht die Spannung schrittweise.</li>
+            <li>Beendet die Messung, wenn der Widerstand warm wird oder der vereinbarte Maximalwert erreicht ist.</li>
+          </ol>
+          <div class="box task">
+            <h3>Zwischenkontrolle</h3>
+            <p>Berechnet nach drei Messwerten grob <code>U/I</code>. Falls der Wert stark schwankt, überprüft Aufbau, Messbereiche und Einheiten.</p>
+          </div>
+          <button class="hint-button" data-target="hint-during">Hilfe anzeigen</button>
+          <div class="hint" id="hint-during">
+            <p>Häufige Fehler: mA werden als A eingetragen, Voltmeter und Amperemeter sind falsch angeschlossen oder der Messbereich ist ungeeignet.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Messwerte prüfen">
+          <h2>12. Messwerte prüfen</h2>
+          <p>Bevor ihr auswertet, kontrolliert ihr die Qualität eurer Daten.</p>
+          <div class="box task">
+            <h3>Checkliste</h3>
+            <ul>
+              <li>Sind alle Spannungen in Volt angegeben?</li>
+              <li>Sind alle Stromstärken in Ampere angegeben?</li>
+              <li>Ist der Quotient <code>U/I</code> ungefähr konstant?</li>
+              <li>Gibt es einen Messwert, der deutlich nicht zum Trend passt?</li>
+              <li>Wurde der Widerstand während der Messung warm?</li>
+            </ul>
+          </div>
+          <button class="hint-button" data-target="hint-outlier">Was ist ein Ausreißer?</button>
+          <div class="hint" id="hint-outlier">
+            <p>Ein Ausreißer ist ein Messwert, der deutlich nicht zum Rest passt. Er darf nicht einfach gelöscht werden. Ihr müsst ihn prüfen und im Protokoll begründen.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Diagramm">
+          <h2>13. U-I-Diagramm erstellen</h2>
+          <p>Tragt die Spannung <code>U</code> gegen die Stromstärke <code>I</code> auf.</p>
+          <div class="box physics">
+            <h3>Achsenwahl</h3>
+            <ul>
+              <li>x-Achse: Stromstärke <code>I</code> in <code>A</code></li>
+              <li>y-Achse: Spannung <code>U</code> in <code>V</code></li>
+            </ul>
+            <p>Dann ist die Steigung der Geraden der Widerstand <code>R</code>.</p>
+          </div>
+          <div class="diagram-box">
+            <svg viewBox="0 0 760 420" role="img" aria-label="Beispiel für ein U-I-Diagramm">
+              <rect x="0" y="0" width="760" height="420" rx="14" fill="#ffffff"></rect>
+              <line x1="90" y1="340" x2="690" y2="340" stroke="#111827" stroke-width="3"></line>
+              <line x1="90" y1="340" x2="90" y2="45" stroke="#111827" stroke-width="3"></line>
+              <text x="390" y="395" text-anchor="middle" font-size="20" font-family="system-ui">Stromstärke I in A</text>
+              <text x="30" y="195" text-anchor="middle" font-size="20" font-family="system-ui" transform="rotate(-90 30 195)">Spannung U in V</text>
+              <line x1="90" y1="340" x2="650" y2="80" stroke="#6d28d9" stroke-width="4"></line>
+              <circle cx="145" cy="315" r="7" fill="#6d28d9"></circle>
+              <circle cx="200" cy="290" r="7" fill="#6d28d9"></circle>
+              <circle cx="255" cy="264" r="7" fill="#6d28d9"></circle>
+              <circle cx="310" cy="238" r="7" fill="#6d28d9"></circle>
+              <circle cx="365" cy="213" r="7" fill="#6d28d9"></circle>
+              <circle cx="420" cy="187" r="7" fill="#6d28d9"></circle>
+              <circle cx="475" cy="160" r="7" fill="#6d28d9"></circle>
+              <circle cx="530" cy="135" r="7" fill="#6d28d9"></circle>
+              <circle cx="585" cy="108" r="7" fill="#6d28d9"></circle>
+              <text x="370" y="70" text-anchor="middle" font-size="22" fill="#4c1d95" font-family="system-ui">Gerade durch den Ursprung</text>
+            </svg>
+          </div>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Erstellt ein Punktdiagramm und fügt eine lineare Ausgleichsgerade hinzu. Verbindet die Messpunkte nicht einfach mit Zickzacklinien.</p>
+          </div>
+          <button class="hint-button" data-target="hint-chart">Hilfe für Tabellenkalkulation anzeigen</button>
+          <div class="hint" id="hint-chart">
+            <ol>
+              <li>Tragt <code>I</code> und <code>U</code> in zwei Spalten ein.</li>
+              <li>Markiert beide Spalten.</li>
+              <li>Wählt ein Punktdiagramm.</li>
+              <li>Setzt <code>I</code> auf die x-Achse und <code>U</code> auf die y-Achse.</li>
+              <li>Fügt eine lineare Trendlinie hinzu.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="step" data-title="Proportionalität">
+          <h2>14. Proportionalität nachweisen</h2>
+          <p>Das Diagramm muss interpretiert werden. Nur ein Bild einzufügen reicht nicht.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Formuliert drei Kriterien, an denen ihr erkennt, ob <code>U</code> proportional zu <code>I</code> ist.</p>
+          </div>
+          <button class="hint-button" data-target="hint-prop">Hilfe anzeigen</button>
+          <div class="hint" id="hint-prop">
+            <p>Denkt an den Verlauf der Messpunkte, den Ursprung und den Quotienten <code>U/I</code>.</p>
+          </div>
+          <button class="solution-button" data-target="solution-prop">Musterkriterien anzeigen</button>
+          <div class="solution" id="solution-prop">
+            <ol>
+              <li>Die Messpunkte liegen näherungsweise auf einer Geraden.</li>
+              <li>Die Gerade verläuft näherungsweise durch den Ursprung.</li>
+              <li>Der Quotient <code>U/I</code> bleibt ungefähr konstant.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="step" data-title="Steigung">
+          <h2>15. Widerstand aus der Steigung bestimmen</h2>
+          <p>Wenn <code>U</code> gegen <code>I</code> aufgetragen wird, entspricht die Steigung der Geraden dem Widerstand.</p>
+          <div class="formula">R = ΔU / ΔI</div>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Wählt zwei weit auseinanderliegende Punkte auf eurer Ausgleichsgeraden und berechnet daraus die Steigung.</p>
+          </div>
+          <button class="hint-button" data-target="hint-slope">Hilfe anzeigen</button>
+          <div class="hint" id="hint-slope">
+            <p>Verwendet zwei Punkte auf der Ausgleichsgeraden, nicht unbedingt zwei einzelne Messpunkte. Beispiel: Wenn die Gerade durch <code>(0,000 A | 0,0 V)</code> und <code>(0,050 A | 5,0 V)</code> geht, gilt <code>R = 5,0 V / 0,050 A = 100 Ω</code>.</p>
+          </div>
+          <button class="solution-button" data-target="solution-slope">Rechenbeispiel anzeigen</button>
+          <div class="solution" id="solution-slope">
+            <pre><button class="copy-btn">Kopieren</button><code>R = ΔU / ΔI
+R = (5,0 V - 1,0 V) / (0,050 A - 0,010 A)
+R = 4,0 V / 0,040 A
+R = 100 Ω</code></pre>
+          </div>
+        </section>
+
+        <section class="step" data-title="Fehler">
+          <h2>16. Fehlerbetrachtung</h2>
+          <p>Messwerte sind nie exakt. Eine gute Auswertung benennt mögliche Abweichungen sachlich.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Findet mindestens drei mögliche Fehlerquellen oder Unsicherheiten.</p>
+          </div>
+          <button class="hint-button" data-target="hint-errors">Hilfe anzeigen</button>
+          <div class="hint" id="hint-errors">
+            <ul>
+              <li>begrenzte Genauigkeit der Messgeräte</li>
+              <li>Ablesefehler</li>
+              <li>falscher Messbereich</li>
+              <li>Erwärmung des Widerstands</li>
+              <li>Kontaktprobleme an Kabeln oder Steckverbindungen</li>
+              <li>Rundungsfehler beim Umrechnen von mA in A</li>
+            </ul>
+          </div>
+          <div class="box physics">
+            <h3>Bessere Formulierung</h3>
+            <p>Nicht nur „Messfehler“ schreiben. Besser: „Eine mögliche Fehlerquelle ist die Erwärmung des Widerstands. Dadurch kann sich der Widerstandswert verändern, sodass <code>U/I</code> nicht exakt konstant bleibt.“</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Fazit">
+          <h2>17. Fazit schreiben</h2>
+          <p>Das Fazit beantwortet die Fragestellung mithilfe eurer Messwerte.</p>
+          <div class="box task">
+            <h3>Aufgabe</h3>
+            <p>Schreibt ein Fazit mit diesen drei Bestandteilen:</p>
+            <ol>
+              <li>Antwort auf die Fragestellung</li>
+              <li>Bezug auf Diagramm und Quotient <code>U/I</code></li>
+              <li>Einschränkung durch Messunsicherheiten</li>
+            </ol>
+          </div>
+          <button class="hint-button" data-target="hint-conclusion">Satzanfänge anzeigen</button>
+          <div class="hint" id="hint-conclusion">
+            <ul>
+              <li>„Unsere Messwerte zeigen, dass ...“</li>
+              <li>„Im U-I-Diagramm erkennt man ...“</li>
+              <li>„Der Quotient U/I ist ...“</li>
+              <li>„Kleine Abweichungen lassen sich erklären durch ...“</li>
+            </ul>
+          </div>
+          <button class="solution-button" data-target="solution-conclusion">Musterfazit anzeigen</button>
+          <div class="solution" id="solution-conclusion">
+            <p>Unsere Messwerte zeigen, dass die Spannung <code>U</code> an dem untersuchten Widerstand näherungsweise proportional zur Stromstärke <code>I</code> ist. Im U-I-Diagramm liegen die Messpunkte ungefähr auf einer Geraden durch den Ursprung. Außerdem bleibt der Quotient <code>U/I</code> annähernd konstant. Damit wird das Ohmsche Gesetz für den untersuchten Widerstand im Rahmen der Messunsicherheiten bestätigt.</p>
+          </div>
+        </section>
+
+        <section class="step" data-title="Protokoll">
+          <h2>18. Protokoll und Erweiterungen</h2>
+          <div class="box task">
+            <h3>Abgabe</h3>
+            <p>Gebt ein vollständiges Versuchsprotokoll ab. Es muss Fragestellung, Hypothese, Material, Schaltplan, Durchführung, Messwerte, Diagramm, Rechnung, Fehlerbetrachtung und Fazit enthalten.</p>
+          </div>
+
+          <button class="solution-button" data-target="solution-report">Protokollvorlage anzeigen</button>
+          <div class="solution" id="solution-report">
+            <pre><button class="copy-btn">Kopieren</button><code>Titel:
+Nachweis des Ohmschen Gesetzes an einem ohmschen Widerstand
+
+Fragestellung:
+Ist die Spannung U an einem ohmschen Widerstand proportional zur Stromstärke I?
+
+Hypothese:
+Wenn der Widerstand ohmsch ist und seine Temperatur ungefähr konstant bleibt, gilt U ~ I.
+
+Material:
+...
+
+Schaltplan:
+...
+
+Durchführung:
+...
+
+Messwerte:
+...
+
+Auswertung:
+1. Diagramm: U gegen I
+2. Prüfung der Proportionalität
+3. Bestimmung der Steigung R
+4. Vergleich mit dem Nennwert des Widerstands
+
+Fehlerbetrachtung:
+...
+
+Fazit:
+...</code></pre>
+          </div>
+
+          <button class="solution-button" data-target="solution-data">Beispielmesswerte zur Kontrolle anzeigen</button>
+          <div class="solution" id="solution-data">
+            <p>Diese Werte sind nur Kontrolldaten. Nutzt im Protokoll eure eigenen Messwerte.</p>
+            <pre><button class="copy-btn">Kopieren</button><code>U in V,I in A,U/I in Ohm
+0.5,0.0050,100
+1.0,0.0101,99
+1.5,0.0150,100
+2.0,0.0202,99
+2.5,0.0250,100
+3.0,0.0301,100
+3.5,0.0350,100
+4.0,0.0402,100
+4.5,0.0449,100
+5.0,0.0501,100</code></pre>
+          </div>
+
+          <div class="box task">
+            <h3>Erweiterungsaufgaben</h3>
+            <ol>
+              <li>Vergleicht euren berechneten Widerstand mit dem aufgedruckten Nennwert oder dem Farbcode.</li>
+              <li>Berechnet die prozentuale Abweichung.</li>
+              <li>Wiederholt die Messung mit einem zweiten Widerstand.</li>
+              <li>Untersucht ein nicht-ohmsches Bauteil, zum Beispiel eine Glühlampe oder Diode, falls im Unterricht erlaubt.</li>
+              <li>Erklärt, warum eine Glühlampe keine Gerade durch den Ursprung liefern muss.</li>
+            </ol>
+          </div>
+
+          <button class="hint-button" data-target="hint-percent">Hilfe zur prozentualen Abweichung anzeigen</button>
+          <div class="hint" id="hint-percent">
+            <div class="formula">Abweichung in % = |R_mess - R_nenn| / R_nenn · 100 %</div>
+          </div>
+        </section>
+
+        <div class="step-controls">
+          <button class="nav-btn secondary" id="prevBtn">Zurück</button>
+          <button class="nav-btn" id="nextBtn">Weiter</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Walkthrough für experimentelles Arbeiten in der Oberstufe: Planung, Durchführung, Auswertung und Reflexion.
+  </footer>
+
+  <script>
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const stepList = document.getElementById('stepList');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let currentStep = 0;
+
+    steps.forEach((step, index) => {
+      const button = document.createElement('button');
+      button.className = 'step-link';
+      button.textContent = (index + 1) + '. ' + step.dataset.title;
+      button.addEventListener('click', () => showStep(index));
+      stepList.appendChild(button);
+    });
+
+    const stepLinks = Array.from(document.querySelectorAll('.step-link'));
+
+    function showStep(index) {
+      currentStep = Math.max(0, Math.min(index, steps.length - 1));
+
+      steps.forEach((step, i) => {
+        step.classList.toggle('active', i === currentStep);
+      });
+
+      stepLinks.forEach((link, i) => {
+        link.classList.toggle('active', i === currentStep);
+      });
+
+      const percent = ((currentStep + 1) / steps.length) * 100;
+      progressBar.style.width = percent + '%';
+      progressText.textContent = 'Schritt ' + (currentStep + 1) + ' von ' + steps.length;
+
+      prevBtn.disabled = currentStep === 0;
+      nextBtn.textContent = currentStep === steps.length - 1 ? 'Fertig' : 'Weiter';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    prevBtn.addEventListener('click', () => showStep(currentStep - 1));
+
+    nextBtn.addEventListener('click', () => {
+      if (currentStep < steps.length - 1) showStep(currentStep + 1);
+    });
+
+    document.querySelectorAll('.hint-button, .solution-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = document.getElementById(button.dataset.target);
+        target.classList.toggle('visible');
+        const isVisible = target.classList.contains('visible');
+        if (button.classList.contains('hint-button')) {
+          button.textContent = isVisible ? 'Hilfe ausblenden' : 'Hilfe anzeigen';
+        } else {
+          button.textContent = isVisible ? 'Lösung ausblenden' : 'Lösung anzeigen';
+        }
+      });
+    });
+
+    document.querySelectorAll('pre').forEach(pre => {
+      const button = pre.querySelector('.copy-btn');
+      if (!button) return;
+
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code').innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          const oldText = button.textContent;
+          button.textContent = 'Kopiert';
+          setTimeout(() => button.textContent = oldText, 1200);
+        } catch (error) {
+          alert('Automatisches Kopieren ging nicht. Markiere den Text und kopiere ihn mit Strg+C.');
+        }
+      });
+    });
+
+    showStep(0);
+  </script>
+</body>
+</html>
